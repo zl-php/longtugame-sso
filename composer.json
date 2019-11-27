@@ -3,7 +3,8 @@
     "description": "sso login",
     "license": "MIT",
     "require": {
-        "php": "^7.1"
+        "php": "^7.1",
+        "php-curl-class/php-curl-class": "^8.5.*"
     },
     "authors": [
         {
@@ -14,6 +15,17 @@
     "autoload": {
         "psr-4": {
             "Longtugame\\Sso\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Longtugame\\Sso\\LongtuSsoServiceProvider"
+            ],
+            "aliases": {
+                "Sso": "Longtugme\\Sso\\Facades\\LongtuSso"
+            }
+
         }
     }
 }
