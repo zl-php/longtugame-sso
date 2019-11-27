@@ -16,6 +16,6 @@ return [
 
     'url'       => env('SSO_URL', 'DDD'),
     'app_id'    => env('SSO_APP_ID', 'DDD'),
-    'app_key'   => env('SSO_APP_KRY', 'DDD')
+    'app_key'   => env('SSO_APP_KEY', 'DDD')
 
 ];
