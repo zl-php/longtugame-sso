@@ -51,9 +51,7 @@ class LongtuSso {
         $decrypt_post_data = array_merge(['mod' => 'sso', 'signature' => $this->sign($parameter)],$parameter);
 
         try {
-
             $response = $this->post($this->config['url'], $decrypt_post_data);
-
         } catch (RequestException $e) {
 
             if ($e->hasResponse())
