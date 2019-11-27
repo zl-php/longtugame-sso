@@ -5,7 +5,7 @@
  * Date: 2019/11/27 10:29
  */
 
-namespace Longtugme\Sso;
+namespace Longtugame\Sso;
 
 use Illuminate\Config\Repository;
 

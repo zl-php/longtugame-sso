@@ -1,6 +1,6 @@
 <?php
 
-namespace Longtugme\Sso;
+namespace Longtugame\Sso;
 
 use Illuminate\Support\ServiceProvider;
 

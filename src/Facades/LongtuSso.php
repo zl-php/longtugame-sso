@@ -1,6 +1,6 @@
 <?php
 
-namespace Longtugme\Sso\Facades;
+namespace Longtugame\Sso\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
