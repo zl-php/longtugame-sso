@@ -1,0 +1,19 @@
+{
+    "name": "longtu/sso",
+    "description": "sso login",
+    "license": "MIT",
+    "require": {
+        "php": "^7.1"
+    },
+    "authors": [
+        {
+            "name": "周磊",
+            "email": "zhoulei1@longtugame.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Longtugme\\Sso\\": "src/"
+        }
+    }
+}
