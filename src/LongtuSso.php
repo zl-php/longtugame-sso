@@ -7,9 +7,9 @@
 
 namespace Longtugame\Sso;
 
-use Curl\Curl;
+use GuzzleHttp\Client;
 use Illuminate\Config\Repository;
-
+use GuzzleHttp\Exception\RequestException;
 
 class LongtuSso {
 
@@ -17,10 +17,9 @@ class LongtuSso {
      * sso 配置文件
      * @var mixed
      */
-    protected $config;
+    protected $config     = [];
 
-    protected $client;
-
+    protected $httpClient = null;
 
     /**
      * 构造方法
@@ -29,7 +28,7 @@ class LongtuSso {
     {
         $this->config = $config->get('sso');
 
-        $this->client = new Curl();
+        $this->httpClient = new Client();
     }
 
     /**
@@ -37,12 +36,10 @@ class LongtuSso {
      *
      * @param $code
      * @return \Illuminate\Http\JsonResponse
-     * @throws \ErrorException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function decrypt($code)
     {
-        $client = $this->client;
-
         //解密参数组装
         $parameter = [
             "app_id"      =>  $this->config['app_id'],
@@ -53,17 +50,26 @@ class LongtuSso {
 
         $decrypt_post_data = array_merge(['mod' => 'sso', 'signature' => $this->sign($parameter)],$parameter);
 
-        $response = $client->post($this->config['url'], $decrypt_post_data);
+        try {
 
-        if ($client->error)
-            return $this->export(0, $client->errorMessage);
+            $response = $this->post($this->config['url'], $decrypt_post_data);
 
-        if($response->rcode != 'y050406' || empty($response->code))
+        } catch (RequestException $e) {
+
+            if ($e->hasResponse())
+                return $this->export(0, $e->getResponse());
+
+            return $this->export(0, $e->getRequest());
+        }
+
+        $result = mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312');
+
+        $result = json_decode($result, true);
+
+        if($result['rcode'] != 'y050406' || empty($result['code']))
             return $this->export(0, '解密失败或参数被篡改');
 
-        $client->close();
-
-        return $this->export(1, '解密成功', $response->code);
+        return $this->export(1, '解密成功', $result['code']);
     }
 
     /**
@@ -71,11 +77,10 @@ class LongtuSso {
      *
      * @param $email
      * @return \Illuminate\Http\JsonResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function bind($email)
     {
-        $client = $this->client;
-
         //绑定sso参数组装
         $parameter = [
             "app_id"    =>  $this->config['app_id'],
@@ -87,18 +92,26 @@ class LongtuSso {
 
         $bind_get_data = array_merge(['mod' => 'sso', 'signature' => $this->sign($parameter)],$parameter);
 
-        $response = $client->get($this->config['url'], $bind_get_data);
+        try {
 
-        if ($client->error)
-            return $this->export(0, $client->errorMessage);
+            $response = $this->get($this->config['url'], $bind_get_data);
 
-        if($response->rcode != 'y130101')
-            return $this->export(0, $response->msg);
+        } catch (RequestException $e) {
 
-        //关闭curl
-        $client->close();
+            if ($e->hasResponse())
+                return $this->export(0, $e->getResponse());
 
-        return $this->export(1, $response->msg);
+            return $this->export(0, $e->getRequest());
+        }
+
+        $result = mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312');
+
+        $result = json_decode($result, true);
+
+        if($result['rcode'] != 'y130101')
+            return $this->export(0, $result['msg']);
+
+        return $this->export(1, $result['msg']);
     }
 
     /**
@@ -118,6 +131,42 @@ class LongtuSso {
             $_str_signSrc = stripslashes($_str_signSrc);
 
         return md5($_str_signSrc);
+    }
+
+    /**
+     * get请求
+     * @param $endpoint
+     * @param array $query
+     * @param array $headers
+     * @return mixed|\Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function get($endpoint, $query = [], $headers = [])
+    {
+        return $this->httpClient->request('get', $endpoint, [
+            'headers' => $headers,
+            'query'   => $query,
+        ]);
+    }
+
+    /**
+     * post请求
+     *
+     * @param $endpoint
+     * @param $data
+     * @param array $options
+     * @return mixed|\Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function post($endpoint, $data, $options = [])
+    {
+        if (!is_array($data)) {
+            $options['body'] = $data;
+        } else {
+            $options['form_params'] = $data;
+        }
+
+        return $this->httpClient->request('post', $endpoint, $options);
     }
 
     /**
