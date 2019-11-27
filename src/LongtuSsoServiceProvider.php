@@ -26,7 +26,7 @@ class LongtuSsoServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->singleton('sso', function ($app) {
+        $this->app->singleton('longtusso', function ($app) {
             return new LongtuSso($app['config']);
         });
     }

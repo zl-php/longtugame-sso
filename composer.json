@@ -1,5 +1,5 @@
 {
-    "name": "longtugme/sso",
+    "name": "longtugame/sso",
     "description": "sso login",
     "license": "MIT",
     "require": {
@@ -13,7 +13,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Longtugme\\Sso\\": "src/"
+            "Longtugame\\Sso\\": "src/"
         }
     }
 }
