@@ -55,9 +55,9 @@ class LongtuSso {
         } catch (RequestException $e) {
 
             if ($e->hasResponse())
-                return $this->export(0, $e->getResponse());
+                return $this->export(0, $e->getMessage());
 
-            return $this->export(0, $e->getRequest());
+            return $this->export(0, $e->getMessage());
         }
 
         $result = mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312');
@@ -97,9 +97,9 @@ class LongtuSso {
         } catch (RequestException $e) {
 
             if ($e->hasResponse())
-                return $this->export(0, $e->getResponse());
+                return $this->export(0, $e->getMessage());
 
-            return $this->export(0, $e->getRequest());
+            return $this->export(0, $e->getMessage());
         }
 
         $result = mb_convert_encoding($response->getBody(), 'utf-8', 'gb2312');
