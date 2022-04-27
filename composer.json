@@ -3,12 +3,12 @@
     "description": "sso login",
     "license": "MIT",
     "require": {
-        "php": "^7.1",
+        "php": "^7.4",
         "guzzlehttp/guzzle": "^6.3"
     },
     "authors": [
         {
-            "name": "周磊",
+            "name": "zhoulei1",
             "email": "zhoulei1@longtugame.com"
         }
     ],
