@@ -1,4 +1,21 @@
-# longtugame-sso
-longtu sso
+<h1 align="center">longtugame sso</h1>
 
-1.php artisan vendor:publish --provider="Longtugame\Sso\LongtuSsoServiceProvider"
+基于 Laravel 开发 longtugame sso 功能模块
+
+## 安装
+```bash
+composer require longtugame/sso
+```
+
+## 使用
+```
+# 发布配置文件
+php artisan vendor:publish --provider="Longtugame\Sso\LongtuSsoServiceProvider"
+
+# 控制器使用
+use Longtugame\Sso\Facades\LongtuSso;
+
+# 返回用户数据（数组格式）
+$user = LongtuSso::decrypt($code);
+
+```

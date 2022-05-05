@@ -12,7 +12,13 @@ class LongtuSso {
         $this->config = $config->get('sso');
     }
 
-    // 解密
+    /**
+     * 解密方法
+     *
+     * @param $code
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function decrypt($code)
     {
         //解密参数组装
@@ -23,20 +29,27 @@ class LongtuSso {
             "code"        =>  $code,
         ];
 
-        $data = array_merge(['mod' => 'sso', 'signature' => $this->getSign($parms)], $parms);
+        $data = array_merge([
+                'mod' => 'sso',
+                'signature' => $this->getSign($parms)
+            ], $parms);
 
-        $rsp = json_decode($this->post($this->config['url'], $data), true);
+        $result = $this->post($this->config['url'], $data);
 
-        if (!isset($rsp['rcode']) || $rsp['rcode'] !== 'y050406') {
-            throw new \Exception(
-                'get result error:'.$rsp['rcode'].' - '.$rsp['msg']
-            );
+        if ($result['rcode'] !== 'y050406' || empty($result['code']['user_id'])) {
+            throw new \Exception('Failed to user info:'. json_encode($result, JSON_UNESCAPED_UNICODE));
         }
 
-        return $rsp;
+        return $result['code'];
     }
 
-    private function getSign($arr_params = [])
+    /**
+     * 参数签名
+     *
+     * @param array $arr_params
+     * @return string
+     */
+    protected function getSign($arr_params = [])
     {
         ksort($arr_params);
         reset($arr_params);
@@ -49,12 +62,22 @@ class LongtuSso {
         return md5($_str_signSrc);
     }
 
-    private function post($url, $params = [], $headers = [])
+    /**
+     * http post
+     *
+     * @param $url
+     * @param array $params
+     * @param array $headers
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    protected function post($url, $params = [], $headers = [])
     {
         $client   = new \GuzzleHttp\Client();
 
-        $rsp = $client->request('POST', $url, ['headers' => $headers, 'form_params' => $params, 'http_errors' => false]);
+        $response = $client->request('POST', $url, ['headers' => $headers, 'form_params' => $params, 'http_errors' => false]);
+        $result = json_decode($response->getBody()->getContents(), true);
 
-        return $rsp->getBody()->getContents();
+        return $result;
     }
 }
