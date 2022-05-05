@@ -15,7 +15,7 @@ php artisan vendor:publish --provider="Longtugame\Sso\LongtuSsoServiceProvider"
 # 控制器使用
 use Longtugame\Sso\Facades\LongtuSso;
 
-# 返回用户数据（数组格式）
+# 返回一个数组格式，只包含用户数据
 $user = LongtuSso::decrypt($code);
 
 ```
