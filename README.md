@@ -7,7 +7,7 @@
 composer require longtugame/sso
 ```
 
-## 使用
+## Laravel 项目内使用
 ```
 # 发布配置文件
 php artisan vendor:publish --provider="Longtugame\Sso\LongtuSsoServiceProvider"
