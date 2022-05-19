@@ -13,10 +13,9 @@ class LongtuSsoServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // 发布配置文件
-        $this->publishes([
-            __DIR__ . '/config/sso.php' => config_path('sso.php'),
-        ]);
+        $this->app->singleton('longtusso', function ($app) {
+            return new LongtuSso($app['config']);
+        });
     }
 
     /**
@@ -26,8 +25,9 @@ class LongtuSsoServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->singleton('longtusso', function ($app) {
-            return new LongtuSso($app['config']);
-        });
+        // 发布配置文件
+        $this->publishes([
+            __DIR__ . '/config/sso.php' => config_path('sso.php'),
+        ]);
     }
 }
