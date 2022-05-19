@@ -1,11 +1,14 @@
 <?php
 namespace Longtugame\Sso;
 
+use GuzzleHttp\Client;
 use Illuminate\Config\Repository;
 
 class LongtuSso {
 
+    protected $code;
     protected $config = [];
+    protected $httpClient = null;
 
     public function __construct(Repository $config)
     {
@@ -13,28 +16,24 @@ class LongtuSso {
     }
 
     /**
-     * 解密方法
-     *
-     * @param $code
-     * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param string $code
+     * @return $this
      */
-    public function decrypt($code)
+    public function setCode($code)
     {
-        //解密参数组装
-        $parms = [
-            "app_id"      =>  $this->config['app_id'],
-            "app_key"     =>  $this->config['app_key'],
-            "act"         =>  "decode",
-            "code"        =>  $code,
-        ];
+        $this->code = $code;
 
-        $data = array_merge([
-                'mod' => 'sso',
-                'signature' => $this->getSign($parms)
-            ], $parms);
+        return $this;
+    }
 
-        $result = $this->post($this->config['url'], $data);
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    public function decrypt()
+    {
+        $response = $this->httpPost($this->config['url'], $this->genData());
+        $result = json_decode($response->getBody()->getContents(), true);
 
         if ($result['rcode'] !== 'y050406' || empty($result['code']['user_id'])) {
             throw new \Exception('Failed to user info:'. json_encode($result, JSON_UNESCAPED_UNICODE));
@@ -44,12 +43,28 @@ class LongtuSso {
     }
 
     /**
-     * 参数签名
-     *
-     * @param array $arr_params
+     * @return array
+     */
+    protected function genData()
+    {
+        $params = [
+            "app_id" =>  $this->config['app_id'],
+            "app_key"=>  $this->config['app_key'],
+            "act"    =>  "decode",
+            "code"   =>  $this->code
+        ];
+
+        return array_merge([
+            'mod' => 'sso',
+            'signature' => $this->genSignature($params)
+        ], $params);
+    }
+
+    /**
+     * @param $arr_params
      * @return string
      */
-    protected function getSign($arr_params = [])
+    protected function genSignature($arr_params = [])
     {
         ksort($arr_params);
         reset($arr_params);
@@ -63,21 +78,13 @@ class LongtuSso {
     }
 
     /**
-     * http post
-     *
      * @param $url
-     * @param array $params
-     * @param array $headers
-     * @return mixed
+     * @param array $data
+     * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function post($url, $params = [], $headers = [])
+    protected function httpPost($url, array $data = [])
     {
-        $client   = new \GuzzleHttp\Client();
-
-        $response = $client->request('POST', $url, ['headers' => $headers, 'form_params' => $params, 'http_errors' => false]);
-        $result = json_decode($response->getBody()->getContents(), true);
-
-        return $result;
+        return (new Client())->request('POST', $url, ['form_params' => $data]);
     }
 }
